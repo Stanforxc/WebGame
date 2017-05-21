@@ -155,7 +155,7 @@ function createLights() {
 }
 
 
-var Naruto = function () {
+/*var Naruto = function () {
     this.mesh = new THREE.Object3D();
     this.mesh.name = 'Naruto';
     this.angleHair = 0;
@@ -234,7 +234,164 @@ var Naruto = function () {
         }
         this.angleHair += game.speed*deltaTime*40;
     }
+};*/
+
+//人物，简单的摆腿接口updateLeg()
+var Naruto = function () {
+    this.mesh = new THREE.Object3D();
+    this.mesh.name = 'Naruto';
+    this.angleHair = 0;
+
+        //身体
+    var bodyGeom = new THREE.BoxGeometry(60,70,40);
+    var bodyMat = new THREE.MeshPhongMaterial({
+        color: Colors.brown,
+        shading:THREE.FlatShading
+    });
+    var body = new THREE.Mesh(bodyGeom,bodyMat);
+    body.position.set(0,-55,0);
+
+    this.mesh.add(body);
+
+    //手
+    var shoulderL=new THREE.Object3D();
+    var shoulderR=new THREE.Object3D();
+    var armGeom = new THREE.BoxGeometry(60,20,20);
+    var armMat = new THREE.MeshPhongMaterial({
+        color: Colors.pink,
+        shading:THREE.FlatShading
+    });
+    var armL = new THREE.Mesh(armGeom,armMat);
+    var armR = new THREE.Mesh(armGeom,armMat);
+
+    shoulderL.position.set(0,-40,-20);
+    shoulderR.position.set(0,-40,20);
+    armL.position.set(30,0,0);
+    armR.position.set(30,0,0);
+    shoulderR.rotation.set(0,0,-0.25*Math.PI);
+    shoulderL.rotation.set(0,0,-0.75*Math.PI);
+    shoulderL.add(armL);
+    shoulderR.add(armR);
+
+    this.mesh.add(shoulderL);
+    this.mesh.add(shoulderR);
+
+    //屁股
+    var assGeom= new THREE.CylinderGeometry(30,30,40,20,20);
+
+    assGeom.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
+    var ass=new THREE.Mesh(assGeom,bodyMat);
+    ass.position.set(0,-80,0);
+    this.mesh.add(ass);
+
+    //腿
+    var legL=new THREE.Object3D();
+    var legR=new THREE.Object3D();
+    var legGeom = new THREE.BoxGeometry(30,80,20);
+    var L = new THREE.Mesh(legGeom,armMat);
+    var R = new THREE.Mesh(legGeom,armMat);
+
+    legL.position.set(0,-100,-10);
+    legR.position.set(0,-100,10);
+    L.position.set(0,-40,0);
+    R.position.set(0,-40,0);
+    legL.add(L);
+    legR.add(R);
+
+    this.mesh.add(legL);
+    this.mesh.add(legR);
+
+
+    var geomHead= new THREE.BoxGeometry(40,40,25,1,1,1);
+    var matHead = new THREE.MeshPhongMaterial({color: Colors.pink, shading:THREE.FlatShading});
+    var head = new THREE.Mesh(geomHead, matHead);
+    head.castShadow = true;
+    head.receiveShadow = true;
+    this.mesh.add(head);
+
+    var hairGeom = new THREE.BoxGeometry(2,10,30);
+    var hairMat = new THREE.MeshLambertMaterial({
+        color: Colors.red
+    });
+    var hair = new THREE.Mesh(hairGeom,hairMat);
+    //hair.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0,2,0));
+    var hairs = new THREE.Object3D();
+
+    var hairsTri=new THREE.Object3D();
+    var numBottom=7;
+    var startPosY = 0;
+    var startPosX = -22;
+    while(numBottom>0)
+    {
+        for(var i=0;i<numBottom;i++)
+        {
+            var h = hair.clone();
+            //h.position.set(startPosX + row*4,0,startPosZ + col*4);
+            h.position.set(startPosX + i*2,startPosY,0);
+            hairsTri.add(h);
+        }
+        numBottom=numBottom-2;
+        startPosY=startPosY+5;
+        startPosX=startPosX+2;
+    }
+
+
+    this.hairsTop = new THREE.Object3D();
+
+    for(var i=0;i<4;i++)
+    {
+        var h=hairsTri.clone();
+        h.position.set(i*10,0,0);
+        this.hairsTop.add(h);
+    }
+    hairs.add(this.hairsTop);
+
+
+    
+    hairs.position.y = 15;
+    this.mesh.add(hairs);
+
+
+    Naruto.prototype.updateHairs = function () {
+        var hairs = this.hairsTop.children;
+
+        var l = hairs.length;
+        for(var i=0;i<l;i++){
+            var h = hairs[i];
+            var pos=Math.sin(this.angleHair+i/3);
+            if(pos<0)
+                pos=0-pos;
+            h.scale.y = .75 + Math.cos(this.angleHair+i/3)*.25;
+        }
+        this.angleHair += 0.16;
+    }
+
+    this.dir=false;
+    this.speed=0.02;
+    this.changeTime=0.25/this.speed;
+    this.totalchangeTime=2*this.changeTime;
+
+    Naruto.prototype.updateLeg=function(){
+        var L=this.LegL;
+        var R=this.legR;
+        if(this.dir)
+        {
+            this.changeTime+=1;
+            legL.rotation.z+=this.speed*Math.PI;
+            legR.rotation.z-=this.speed*Math.PI;
+        }
+        else
+        {
+            this.changeTime-=1;
+            legL.rotation.z-=this.speed*Math.PI;
+            legR.rotation.z+=this.speed*Math.PI;
+        }
+
+        if(this.changeTime>=this.totalchangeTime||this.changeTime<=0)
+            this.dir=!this.dir;
+    }
 };
+
 
 var AirPlane = function () {
     this.mesh = new THREE.Object3D();
