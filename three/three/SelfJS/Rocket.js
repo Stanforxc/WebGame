@@ -4,7 +4,7 @@
 Rocket = function(){
 
     this.mesh = new THREE.Object3D();
-    this.rocketTween = TweenMax.set(this.mesh.position, {x:0});
+    this.rocketTween = TweenMax.set(this.mesh.position, {x:100});
 
     this.bodyMat = new THREE.MeshLambertMaterial ({
         color: 0x1d836a,
@@ -188,23 +188,6 @@ Rocket = function(){
     this.mesh.add(this.engine);
     this.mesh.add(this.legs);
 
-};
-Rocket.prototype.flyPath = function(){
-    pt = spline.getPoint( t );
-    tangent = spline.getTangent( t ).normalize();
-    axis.crossVectors( up, tangent ).normalize();
-    radians = Math.acos( up.dot( tangent ) );
-    var quaterions = this.mesh.quaternion.setFromAxisAngle( axis, radians );
-
-    this.rocketTween.kill();
-    this.tweenPosition = TweenMax.to(rocket1.mesh.position, 0.1, {x:pt.x, y: pt.y, z: pt.z});
-    this.tweenQuaternion = TweenMax.to(this.mesh.quaternion, 0.1,
-        {
-            x: quaterions._x,
-            y: quaterions._y,
-            z: quaterions._z});
-
-    t = (t >= 1) ? 0 : t += 0.0009;
 };
 
 function makeCylinder(radiusTop, radiusBottom, height, radiusSegments, heightSegments, mat) {

@@ -1,6 +1,72 @@
 /**
  * Created by stanforxc on 17-5-10.
  */
+
+
+//创建场景
+function createScene() {
+
+    HEIGHT = window.innerHeight;
+    WIDTH = window.innerWidth;
+    clock = new THREE.Clock();
+
+    scene = new THREE.Scene();
+    aspectRatio = WIDTH / HEIGHT;
+    fieldOfView = 60;
+    nearPlane = 1;
+    farPlane = 10000;
+    camera = new THREE.PerspectiveCamera(
+        fieldOfView,
+        aspectRatio,
+        nearPlane,
+        farPlane
+    );
+    scene.fog = new THREE.Fog(0xf7d9aa, 100,950);
+    camera.position.x = 0;
+    camera.position.z = 200;
+    camera.position.y = 100;
+
+    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(WIDTH, HEIGHT);
+    renderer.shadowMap.enabled = true;
+    container = document.getElementById('world');
+    container.appendChild(renderer.domElement);
+
+    window.addEventListener('resize', handleWindowResize, false);
+}
+
+function handleWindowResize() {
+    HEIGHT = window.innerHeight;
+    WIDTH = window.innerWidth;
+    renderer.setSize(WIDTH, HEIGHT);
+    camera.aspect = WIDTH / HEIGHT;
+    camera.updateProjectionMatrix();
+}
+
+//创建光源
+var ambientLight,hemisphereLight, shadowLight;
+function createLights() {
+
+    hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, .9);
+    ambientLight = new THREE.AmbientLight(0xdc8874,.5);
+
+    shadowLight = new THREE.DirectionalLight(0xffffff, .9);
+    shadowLight.position.set(150, 350, 350);
+    shadowLight.castShadow = true;
+    shadowLight.shadow.camera.left = -400;
+    shadowLight.shadow.camera.right = 400;
+    shadowLight.shadow.camera.top = 400;
+    shadowLight.shadow.camera.bottom = -400;
+    shadowLight.shadow.camera.near = 1;
+    shadowLight.shadow.camera.far = 1000;
+    shadowLight.shadow.mapSize.width = 4096;
+    shadowLight.shadow.mapSize.height = 4096;
+
+    scene.add(hemisphereLight);
+    scene.add(shadowLight);
+}
+
+
 var Colors = {
     red:0xf25346,
     white:0xd8d0d1,
@@ -86,157 +152,10 @@ function resetGame(){
 
         status : "playing"
     };
-    //fieldLevel.innerHTML = Math.floor(game.level);
+    fieldLevel.innerHTML = Math.floor(game.level);
 }
 
-
-
-//创建场景
-function createScene() {
-
-    HEIGHT = window.innerHeight;
-    WIDTH = window.innerWidth;
-    clock = new THREE.Clock();
-
-    scene = new THREE.Scene();
-    aspectRatio = WIDTH / HEIGHT;
-    fieldOfView = 60;
-    nearPlane = 1;
-    farPlane = 10000;
-    camera = new THREE.PerspectiveCamera(
-        fieldOfView,
-        aspectRatio,
-        nearPlane,
-        farPlane
-    );
-    scene.fog = new THREE.Fog(0xf7d9aa, 100,950);
-    camera.position.x = 0;
-    camera.position.z = 200;
-    camera.position.y = 100;
-
-    renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(WIDTH, HEIGHT);
-    renderer.shadowMap.enabled = true;
-    container = document.getElementById('world');
-    container.appendChild(renderer.domElement);
-
-    window.addEventListener('resize', handleWindowResize, false);
-}
-
-function handleWindowResize() {
-    HEIGHT = window.innerHeight;
-    WIDTH = window.innerWidth;
-    renderer.setSize(WIDTH, HEIGHT);
-    camera.aspect = WIDTH / HEIGHT;
-    camera.updateProjectionMatrix();
-}
-
-//创建光源
-var ambientLight,hemisphereLight, shadowLight;
-function createLights() {
-
-    hemisphereLight = new THREE.HemisphereLight(0xaaaaaa,0x000000, .9);
-    ambientLight = new THREE.AmbientLight(0xdc8874,.5);
-
-    shadowLight = new THREE.DirectionalLight(0xffffff, .9);
-    shadowLight.position.set(150, 350, 350);
-    shadowLight.castShadow = true;
-    shadowLight.shadow.camera.left = -400;
-    shadowLight.shadow.camera.right = 400;
-    shadowLight.shadow.camera.top = 400;
-    shadowLight.shadow.camera.bottom = -400;
-    shadowLight.shadow.camera.near = 1;
-    shadowLight.shadow.camera.far = 1000;
-    shadowLight.shadow.mapSize.width = 4096;
-    shadowLight.shadow.mapSize.height = 4096;
-
-    scene.add(hemisphereLight);
-    scene.add(shadowLight);
-}
-
-
-/*var Naruto = function () {
-    this.mesh = new THREE.Object3D();
-    this.mesh.name = 'Naruto';
-    this.angleHair = 0;
-
-
-    //身体
-    var bodyGeom = new THREE.BoxGeometry(15,15,15);
-    var bodyMat = new THREE.MeshPhongMaterial({
-        color: Colors.brown,
-        shading:THREE.FlatShading
-    });
-    var body = new THREE.Mesh(bodyGeom,bodyMat);
-    body.position.set(2,-12,0);
-    this.mesh.add(body);
-
-
-    //脸
-    var faceGeom = new THREE.BoxGeometry(10,10,10);
-    var faceMat = new THREE.MeshLambertMaterial({
-       color: Colors.pink
-
-    });
-    var face = new THREE.Mesh(faceGeom,faceMat);
-    this.mesh.add(face);
-
-
-    //头发
-    var hairGeom = new THREE.BoxGeometry(4,4,4);
-    var hairMat = new THREE.MeshLambertMaterial({
-        color: Colors.brown
-    });
-    var hair = new THREE.Mesh(hairGeom,hairMat);
-    hair.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0,2,0));
-    var hairs = new THREE.Object3D();
-
-
-    this.hairsTop = new THREE.Object3D();
-
-    for (var i=0; i < 12; ++i){
-        var h = hair.clone();
-        var col = i%3;
-        var row = Math.floor(i/3);
-        var startPosZ = -4;
-        var startPosX = -4;
-        h.position.set(startPosX + row*4,0,startPosZ + col*4);
-        this.hairsTop.add(h);
-    }
-
-    hairs.add(this.hairsTop);
-
-    var hairSideGeom = new THREE.BoxGeometry(12,4,2);
-    hairSideGeom.applyMatrix(new THREE.Matrix4().makeTranslation(-6,0,0));
-    var hairSideR = new THREE.Mesh(hairSideGeom,hairMat);
-    var hairSideL = hairSideR.clone();
-    hairSideR.position.set(8,-2,6);
-    hairSideR.position.set(8,-2,-6);
-    hairs.add(hairSideR);
-    hairs.add(hairSideL);
-
-    var hairBackGeom = new THREE.BoxGeometry(2,8,10);
-    var hairBack = new THREE.Mesh(hairBackGeom,hairMat);
-    hairBack.position.set(-1,-4,0);
-    hairs.add(hairBack);
-    hairs.position.set(-5,5,0);
-
-    this.mesh.add(hairs);
-
-
-    Naruto.prototype.updateHairs = function () {
-        var hairs = this.hairsTop.children;
-
-        var l = hairs.length;
-        for(var i=0;i<l;i++){
-            var h = hairs[i];
-            h.scale.y = .75 + Math.cos(this.angleHair+i/3)*.25;
-        }
-        this.angleHair += game.speed*deltaTime*40;
-    }
-};*/
-
-//人物，简单的摆腿接口updateLeg()
+// 人物，简单的摆腿接口updateLeg()
 var Naruto = function () {
     this.mesh = new THREE.Object3D();
     this.mesh.name = 'Naruto';
@@ -347,7 +266,7 @@ var Naruto = function () {
     hairs.add(this.hairsTop);
 
 
-    
+
     hairs.position.y = 15;
     this.mesh.add(hairs);
 
@@ -364,7 +283,7 @@ var Naruto = function () {
             h.scale.y = .75 + Math.cos(this.angleHair+i/3)*.25;
         }
         this.angleHair += 0.16;
-    }
+    };
 
     this.dir=false;
     this.speed=0.02;
@@ -486,32 +405,23 @@ var AirPlane = function () {
 
 };
 
-
+var skyDome;
 Sky = function () {
     this.mesh = new THREE.Object3D();
-
     this.nClouds = 20;
     this.clouds = [];
-
     var stepAngle = Math.PI*2 / this.nClouds;
-
     for(var i=0; i<this.nClouds; i++){
         var c = new Cloud();
         this.clouds.push(c);
-
         var a = stepAngle*i;
-        var h = 750 + Math.random()*200;
-
+        var h = game.seaRadius + 150 + Math.random()*200;
         c.mesh.position.y = Math.sin(a)*h;
         c.mesh.position.x = Math.cos(a)*h;
-
-        c.mesh.rotation.Z = a + Math.PI/2;
-
         c.mesh.position.z = -300-Math.random()*500;
-
-        var s = 1 + Math.random()*2;
+        c.mesh.rotation.z = a + Math.PI/2;
+        var s = 1+Math.random()*2;
         c.mesh.scale.set(s,s,s);
-
         this.mesh.add(c.mesh);
     }
 
@@ -527,21 +437,72 @@ Sky = function () {
 
 //创建海
 Sea = function () {
-    var geom = new THREE.CylinderGeometry(game.seaRadius,game.seaRadius,game.seaLength,40,10);
 
+    var geom = new THREE.CylinderGeometry(game.seaRadius,game.seaRadius,game.seaLength,40,10);
     geom.applyMatrix(new THREE.Matrix4().makeRotationX(-Math.PI/2));
     geom.mergeVertices();
+    var l = geom.vertices.length;
 
+    this.waves = [];
+
+    for (var i=0;i<l;i++){
+        var v = geom.vertices[i];
+        //v.y = Math.random()*30;
+        this.waves.push({y:v.y,
+            x:v.x,
+            z:v.z,
+            ang:Math.random()*Math.PI*2,
+            amp:game.wavesMinAmp + Math.random()*(game.wavesMaxAmp-game.wavesMinAmp),
+            speed:game.wavesMinSpeed + Math.random()*(game.wavesMaxSpeed - game.wavesMinSpeed)
+        });
+    };
     var mat = new THREE.MeshPhongMaterial({
         color:Colors.blue,
-        transparent : true,
-        opacity:1,
-        shading:THREE.FlatShading
+        transparent:true,
+        opacity:.8,
+        shading:THREE.FlatShading,
+
     });
 
-    this.mesh = new THREE.Mesh(geom,mat);
-
+    this.mesh = new THREE.Mesh(geom, mat);
+    this.mesh.name = "waves";
     this.mesh.receiveShadow = true;
+
+
+    Sea.prototype.moveWaves = function (){
+        var verts = this.mesh.geometry.vertices;
+        var l = verts.length;
+        for (var i=0; i<l; i++){
+            var v = verts[i];
+            var vprops = this.waves[i];
+            v.x =  vprops.x + Math.cos(vprops.ang)*vprops.amp;
+            v.y = vprops.y + Math.sin(vprops.ang)*vprops.amp;
+            vprops.ang += vprops.speed*deltaTime;
+            this.mesh.geometry.verticesNeedUpdate=true;
+        }
+    }
+};
+
+
+Terrain = function () {
+    var xS = 63, yS = 63;
+
+
+    this.terrainScene = new THREE.Terrain({
+        easing: THREE.Terrain.Linear,
+        frequency: 2.5,
+        heightmap: THREE.Terrain.DiamondSquare,
+        material: new THREE.MeshBasicMaterial({color: 0x5566aa}),
+        maxHeight: 100,
+        minHeight: -100,
+        steps: 1,
+        useBufferGeometry: false,
+        xSegments: xS,
+        xSize: 1024,
+        ySegments: yS,
+        ySize: 1024
+    });
+
 };
 
 
@@ -691,6 +652,62 @@ var Smoke = function () {
     return Smoke;
 }();
 
+class Fly {
+    constructor() {
+        this.group = new THREE.Group();
+        this.group.position.set(0, 12.71, 19.08);
+
+        this.wingAngle = 0;
+
+        this.drawBody();
+        this.drawWings();
+    }
+    drawBody() {
+        const flyGeometry = new THREE.BoxGeometry(1, 1, 1);
+        const flyMaterial = new THREE.MeshStandardMaterial({
+            color: 0x3F3F3F,
+            roughness: 1,
+            shading: THREE.FlatShading,
+        });
+        const fly = new THREE.Mesh(flyGeometry, flyMaterial);
+        this.group.add(fly);
+    }
+    drawWings() {
+        this.rightWing = drawCylinder(0xffffff, 0.42, 0.08, 1.26, 4);
+        this.rightWing.position.set(0, 0.2, 0.6);
+        this.rightWing.rotation.set(Math.PI / 4, 0, Math.PI / 4);
+        this.rightWing.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0.21, 0.04));
+        this.group.add(this.rightWing);
+
+        this.leftWing = this.rightWing.clone();
+        this.leftWing.position.z = -this.rightWing.position.z;
+        this.group.add(this.leftWing);
+    }
+
+    moveFly() {
+        const timer = Date.now() * 0.0001;
+        this.group.position.x = 4 * Math.cos(timer * 3);
+        this.group.position.y = 5 * Math.sin(timer * 6);
+    }
+    moveWings() {
+        this.wingAngle += 0.5;
+        const wingAmplitude = Math.PI / 8;
+        this.rightWing.rotation.x = (Math.PI / 4) - (Math.cos(this.wingAngle) * wingAmplitude);
+        this.leftWing.rotation.x = (-Math.PI / 4) + (Math.cos(this.wingAngle) * wingAmplitude);
+    }
+}
+
+function drawCylinder(materialColor, rTop, rBottom, height, radialSeg) {
+    const geometry = new THREE.CylinderGeometry(rTop, rBottom, height, radialSeg);
+    const material = new THREE.MeshStandardMaterial({
+        color: materialColor,
+        roughness: 1,
+        shading: THREE.FlatShading,
+    });
+    const mesh = new THREE.Mesh(geometry, material);
+    return mesh;
+}
+
 
 
 Ennemy = function(){
@@ -736,7 +753,7 @@ EnnemiesHolder.prototype.spawnEnnemies = function(){
     }
 };
 
-EnnemiesHolder.prototype.rotateEnnemies = function(airplane){
+EnnemiesHolder.prototype.rotateEnnemies = function(object){
     for (var i=0; i<this.ennemiesInUse.length; i++){
         var ennemy = this.ennemiesInUse[i];
         ennemy.angle += game.speed*deltaTime*game.ennemiesSpeed;
@@ -749,7 +766,7 @@ EnnemiesHolder.prototype.rotateEnnemies = function(airplane){
         ennemy.mesh.rotation.y += Math.random()*.1;
 
         //var globalEnnemyPosition =  ennemy.mesh.localToWorld(new THREE.Vector3());
-        var diffPos = airplane.mesh.position.clone().sub(ennemy.mesh.position.clone());
+        var diffPos = object.mesh.position.clone().sub(ennemy.mesh.position.clone());
         var d = diffPos.length();
         if (d<game.ennemyDistanceTolerance){
             particlesHolder.spawnParticles(ennemy.mesh.position.clone(), 15, Colors.red, 3);
@@ -871,7 +888,7 @@ CoinsHolder.prototype.spawnCoins = function(){
     }
 };
 
-CoinsHolder.prototype.rotateCoins = function(airplane){
+CoinsHolder.prototype.rotateCoins = function(object){
     for (var i=0; i<this.coinsInUse.length; i++){
         var coin = this.coinsInUse[i];
         if (coin.exploding) continue;
@@ -883,7 +900,7 @@ CoinsHolder.prototype.rotateCoins = function(airplane){
         coin.mesh.rotation.y += Math.random()*.1;
 
         //var globalCoinPosition =  coin.mesh.localToWorld(new THREE.Vector3());
-        var diffPos = airplane.mesh.position.clone().sub(coin.mesh.position.clone());
+        var diffPos = object.mesh.position.clone().sub(coin.mesh.position.clone());
         var d = diffPos.length();
         if (d<game.coinDistanceTolerance){
             this.coinsPool.unshift(this.coinsInUse.splice(i,1)[0]);
@@ -919,18 +936,39 @@ var sea;
 var sky;
 var smoke;
 var rocket1;
+var person;
+var terrain;
+var fly;
+function createFly() {
+    fly = new Fly();
+    //fly.group.scale.set(.1,.1,.1);
+    //fly.group.position.set(200,150,-100);
+    console.log("fly created");
+    scene.add(fly.group);
+}
+function createTerrain() {
+    terrain = new Terrain();
+    scene.add(terrain.terrainScene);
+}
 function createPlane() {
     airplane = new AirPlane();
     airplane.mesh.scale.set(.25,.25,.25);
-    airplane.mesh.position.y = 100;
+    airplane.mesh.position.y = game.planeDefaultHeight;
     scene.add(airplane.mesh);
 }
 
 function createRocket(){
     rocket1 = new Rocket();
     rocket1.mesh.scale.set(.1,.1,.1);
-    rocket1.mesh.rotation.z +
+    rocket1.mesh.position.y = game.planeDefaultHeight;
     scene.add(rocket1.mesh);
+}
+
+function createCharacter() {
+    person = new Naruto();
+    person.mesh.scale.set(.15,.15,.15);
+    person.mesh.position.y = game.planeDefaultHeight;
+    scene.add(person.mesh);
 }
 
 function createSea() {
@@ -973,6 +1011,22 @@ function createParticles(){
     particlesHolder = new ParticlesHolder();
     //ennemiesHolder.mesh.position.y = -game.seaRadius;
     scene.add(particlesHolder.mesh)
+}
+
+function createSaturnSystem() {
+    drawParticles();
+    drawSaturn();
+    saturn.scale.set(.1,.1,.1);
+    particles.scale.set(.1,.1,.1);
+    saturn.position.set(100,300,-200);
+    particles.position.set(100,300,-200);
+}
+
+
+function createCactus(){
+    drawCactus();
+    cactus.scale.set(.1,.1,.1);
+    cactus.position.set(200,150,-200);
 }
 
 
@@ -1022,18 +1076,249 @@ function updateBird() {
         bird.rotation.z = Math.asin( boid.velocity.y / boid.velocity.length() );
 
         bird.phase = ( bird.phase + ( Math.max( 0, bird.rotation.z ) + 0.1 )  ) % 62.83;
-        bird.geometry.vertices[ 5 ].y = bird.geometry.vertices[ 4 ].y = Math.sin( bird.phase ) * 5;
+        bird.geometry.vertices[5].y = bird.geometry.vertices[ 4 ].y = Math.sin( bird.phase ) * 5;
 
     }
 
 }
 
 
+var particles, saturn;
+const cc = [0x37BE95, 0xF3F3F3, 0x6549C0];
+function drawParticles() {
+    particles = new THREE.Group();
+    scene.add(particles);
+    const geometry = new THREE.TetrahedronGeometry(5, 0);
+
+    for (var i = 0; i < 500; i ++) {
+        const material = new THREE.MeshPhongMaterial({
+            color: cc[Math.floor(Math.random() * cc.length)],
+            shading: THREE.FlatShading
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        mesh.position.set((Math.random() - 0.5) * 1000,
+            (Math.random() - 0.5) * 1000,
+            (Math.random() - 0.5) * 1000);
+        mesh.updateMatrix();
+        mesh.matrixAutoUpdate = false;
+        particles.add(mesh);
+    }
+}
+
+function drawSaturn() {
+    saturn = new THREE.Group();
+    saturn.rotation.set(0.4, 0.3, 0);
+    scene.add(saturn);
+
+    const planetGeometry = new THREE.IcosahedronGeometry(100, 1);
+
+    const planetMaterial = new THREE.MeshPhongMaterial({
+        color: 0x37BE95,
+        shading: THREE.FlatShading
+    });
+    const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+
+    planet.castShadow = true;
+    planet.receiveShadow = true;
+    planet.position.set(0, 40, 0);
+    saturn.add(planet);
+
+    const ringGeometry = new THREE.TorusGeometry(140, 12, 6, 15);
+    const ringMeterial = new THREE.MeshStandardMaterial({
+        color: 0x6549C0,
+        shading: THREE.FlatShading
+    });
+    const ring = new THREE.Mesh(ringGeometry, ringMeterial);
+    ring.position.set(0, 40, 0)
+    ring.rotateX(80);
+    ring.castShadow = true;
+    ring.receiveShadow = true;
+    saturn.add(ring);
+}
+
+function updateSaturnAndParticles() {
+    particles.rotation.x += 0.001;
+    particles.rotation.y -= 0.004;
+    saturn.rotation.y += 0.005;
+}
+
+var controls, cactus;
+function drawCactus() {
+    const geometry = new THREE.SphereGeometry(100, 5, 5);
+    geometry.computeBoundingSphere();
+
+    const scale = 300 / geometry.boundingSphere.radius;
+    geometry.scale(scale, scale, scale);
+
+    const originalGeometry = geometry.clone();
+    originalGeometry.computeFaceNormals();
+    originalGeometry.computeVertexNormals(true);
+
+    geometry.mergeVertices();
+    geometry.computeFaceNormals();
+    geometry.computeVertexNormals(true);
+
+    cactus = new THREE.Group();
+    scene.add(cactus);
+
+    const mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({
+        color: 0xfefefe,
+        wireframe: true,
+        opacity: 0.5,
+    }));
+    cactus.add(mesh);
+
+    const innerGeometry = new THREE.SphereGeometry(220, 5, 5);
+    const innerSphere = new THREE.Mesh(innerGeometry,
+        new THREE.MeshStandardMaterial({
+            color: 0x68be83,
+            roughness: 0.8,
+            shading: THREE.FlatShading,
+        }));
+
+    cactus.add(innerSphere);
+
+    for (var f = 0, fl = geometry.faces.length; f < fl; f += 1) {
+        const face = geometry.faces[f];
+        const centroid = new THREE.Vector3()
+            .add(geometry.vertices[face.a])
+            .add(geometry.vertices[face.b])
+            .add(geometry.vertices[face.c])
+            .divideScalar(3);
+        const arrow = new THREE.ArrowHelper(face.normal, centroid, 15, 0x3333FF);
+        mesh.add(arrow);
+    }
+
+    const fvNames = ['a', 'b', 'c', 'd'];
+
+    for (var f = 0, fl = originalGeometry.faces.length; f < fl; f += 1) {
+        const face = originalGeometry.faces[f];
+        for (var v = 0, vl = face.vertexNormals.length; v < vl; v += 1) {
+            const arrow = new THREE.ArrowHelper(
+                face.vertexNormals[v],
+                originalGeometry.vertices[face[fvNames[v]]],
+                15,
+                0xFF3333
+            );
+            mesh.add(arrow);
+        }
+    }
+
+    for (var f = 0, fl = mesh.geometry.faces.length; f < fl; f += 1) {
+        const face = mesh.geometry.faces[f];
+        for (var v = 0, vl = face.vertexNormals.length; v < vl; v += 1) {
+            const arrow = new THREE.ArrowHelper(
+                face.vertexNormals[v],
+                mesh.geometry.vertices[face[fvNames[v]]],
+                15,
+                0x000000
+            );
+            mesh.add(arrow);
+        }
+    }
+};
+
+function updateCactus() {
+    cactus.rotation.x -= 0.01;
+    cactus.rotation.y -= 0.02;
+}
+
+var group;
+function createASystem(){
+    group = new THREE.Group();
+    group.position.y = 50;
+    scene.add(group);
+
+    function addShape(shape, extrudeSettings, color, x, y, z, rx, ry, rz, s) {
+        var geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+
+        var meshMaterial = new THREE.MeshNormalMaterial();
+        var mesh = new THREE.Mesh(geometry, meshMaterial);
+
+        mesh.position.set(x, y, z);
+        mesh.rotation.set(rx, ry, rz);
+        mesh.scale.set(s, s, s);
+        group.add(mesh);
+    }
+
+    var hexShape = new THREE.Shape();
+    hexShape.moveTo(0, 0.8);
+    hexShape.lineTo(0.4, 0.5);
+    hexShape.lineTo(0.3, 0);
+    hexShape.lineTo(-0.3, 0);
+    hexShape.lineTo(-0.4, 0.5);
+    hexShape.lineTo(0, 0.8);
+
+    var numberOfCrystals = 100;
+    for (i = 0; i < numberOfCrystals; i++) {
+        var extrudeSettings = {
+            amount: Math.random() * 200,
+            bevelEnabled: true,
+            bevelSegments: 1,
+            steps: 1,
+            bevelSize: (Math.random() * 10) + 15,
+            bevelThickness: (Math.random() * 10) + 25
+        };
+
+        addShape(
+            hexShape,
+            extrudeSettings,
+            0xff3333, // color
+            0, // x pos
+            0, // y pos
+            0, // z pos
+            Math.random() * 2 * Math.PI, // x rotation
+            Math.random() * 2 * Math.PI, // y rotation
+            Math.random() * 2 * Math.PI, // z rotation
+            1
+        );
+    }
+
+    group.scale.set(.1,.1,.1);
+    group.position.set(-170,200,-100);
+
+}
+
+function updateASystem() {
+    group.rotation.x -= 0.01;
+    group.rotation.y -= 0.02;
+}
+
+
+var galaxyParticles = [];
+
+function createGaxlaxy() {
+    var particle, material;
+    for (var zpos = -1000; zpos < 1000; zpos += 5) {
+        material = new THREE.ParticleCanvasMaterial2({
+            color: 0xF7E4BE,
+            program: function(c){
+                c.beginPath();
+                c.arc(0, 0, .8, 0, Math.PI * 2, true);
+                c.fill();
+            }
+        });
+        particle = new THREE.Particle(material);
+        particle.position.x = Math.random() * 1000 - 500;
+        particle.position.y = Math.random() * 1000 - 500;
+        particle.position.z = zpos;
+        particle.scale.x = particle.scale.y = 1;
+        scene.add(particle);
+        galaxyParticles.push(particle);
+    }
+};
+
+function updateGalaxy() {
+    for (var i = 0; i < particles.length; i++) {
+        particle = galaxyParticles[i];
+        particle.position.z += speed;
+        if (particle.position.z > 1000) particle.position.z -= 2000;
+    }
+}
 function loop(){
     newTime = new Date().getTime();
     deltaTime = newTime-oldTime;
     oldTime = newTime;
-
 
     if (game.status=="playing") {
 
@@ -1057,45 +1342,57 @@ function loop(){
         if (Math.floor(game.distance) % game.distanceForLevelUpdate == 0 && Math.floor(game.distance) > game.levelLastUpdate) {
             game.levelLastUpdate = Math.floor(game.distance);
             game.level++;
-            // fieldLevel.innerHTML = Math.floor(game.level);
+            fieldLevel.innerHTML = Math.floor(game.level);
 
             game.targetBaseSpeed = game.initSpeed + game.incrementSpeedByLevel * game.level;
         }
 
 
-        // updatePlane();
-        updateRocket();
+
+        // updateItem(airplane);
+        updateItem(rocket1);
+        // updateItem(person);
         updateDistance();
         updateEnergy();
         game.baseSpeed += (game.targetBaseSpeed - game.baseSpeed) * deltaTime * 0.02;
         game.speed = game.baseSpeed * game.planeSpeed;
 
     }
+    else if(game.status=="gameover"){
+        game.speed *= .99;
+        rocket1.mesh.rotation.z += (-Math.PI/2 - rocket1.mesh.rotation.z)*.0002*deltaTime;
+        rocket1.mesh.rotation.x += 0.0003*deltaTime;
+        game.planeFallSpeed *= 1.05;
+        rocket1.mesh.position.y -= game.planeFallSpeed*deltaTime;
 
-    // }else if(game.status=="gameover"){
-    //     game.speed *= .99;
-    //     airplane.mesh.rotation.z += (-Math.PI/2 - airplane.mesh.rotation.z)*.0002*deltaTime;
-    //     airplane.mesh.rotation.x += 0.0003*deltaTime;
-    //     game.planeFallSpeed *= 1.05;
-    //     airplane.mesh.position.y -= game.planeFallSpeed*deltaTime;
-    //
-    //     if (airplane.mesh.position.y <-200){
-    //         showReplay();
-    //         game.status = "waitingReplay";
-    //
-    //     }
-    // }else if (game.status=="waitingReplay"){
-    //
-    // }
+        if (rocket1.mesh.position.y <-200){
+            //showReplay();
+            game.status = "waitingReplay";
 
+        }
+    }else if (game.status=="waitingReplay"){
 
+    }
+
+    fly.moveFly();
+    fly.moveWings();
     updateBird();
+    sea.moveWaves();
+    sky.moveClouds();
+    updateSaturnAndParticles();
+    updateCactus();
+    updateASystem();
+    updateGalaxy();
+
+   // smoke.update();
+    //person.updateHairs();
+    //person.updateLeg();
 
     //airplane.propeller.rotation.x +=.2 + game.planeSpeed * deltaTime*.005;
     sea.mesh.rotation.z += game.speed*deltaTime;
-    sky.mesh.rotation.z += .01;
-
-
+    //sky.mesh.rotation.z += .01;
+    //
+    //
     if ( sea.mesh.rotation.z > 2*Math.PI)  sea.mesh.rotation.z -= 2*Math.PI;
 
     ambientLight.intensity += (.5 - ambientLight.intensity)*deltaTime*0.005;
@@ -1114,28 +1411,28 @@ function loop(){
 function updateEnergy(){
     game.energy -= game.speed*deltaTime*game.ratioSpeedEnergy;
     game.energy = Math.max(0, game.energy);
-    // energyBar.style.right = (100-game.energy)+"%";
-    // energyBar.style.backgroundColor = (game.energy<50)? "#f25346" : "#68c3c0";
-    //
-    // if (game.energy<30){
-    //     energyBar.style.animationName = "blinking";
-    // }else{
-    //     energyBar.style.animationName = "none";
-    // }
-    //
-    // if (game.energy <1){
-    //     game.status = "gameover";
-    // }
+    energyBar.style.right = (100-game.energy)+"%";
+    energyBar.style.backgroundColor = (game.energy<50)? "#f25346" : "#68c3c0";
+
+    if (game.energy<30){
+        energyBar.style.animationName = "blinking";
+    }else{
+        energyBar.style.animationName = "none";
+    }
+
+    if (game.energy <1){
+        game.status = "gameover";
+    }
 }
 
 function updateDistance() {
     game.distance +=  game.speed*deltaTime*game.ratioSpeedDistance;
-
+    fieldDistance.innerHTML = Math.floor(game.distance);
     var d = 502*(1-(game.distance%game.distanceForLevelUpdate)/game.distanceForLevelUpdate);
-    //level
+    levelCircle.setAttribute("stroke-dashoffset", d);
 }
 
-function updatePlane(){
+function updateItem(object){
 
     game.planeSpeed = normalize(mousePos.x,-.5,.5,game.planeMinSpeed,game.planeMaxSpeed);
 
@@ -1149,61 +1446,22 @@ function updatePlane(){
     targetY += game.planeCollisionDisplacementY;
 
 
-    airplane.mesh.position.y += (targetY - airplane.mesh.position.y)*deltaTime*game.planeMoveSensivity;
-    airplane.mesh.position.x += (targetX - airplane.mesh.position.x)*deltaTime*game.planeMoveSensivity;
+    object.mesh.position.y += (targetY - object.mesh.position.y)*deltaTime*game.planeMoveSensivity;
+    object.mesh.position.x += (targetX - object.mesh.position.x)*deltaTime*game.planeMoveSensivity;
 
-    airplane.mesh.rotation.z = (targetY-airplane.mesh.position.y)*deltaTime*game.planeRotXSensivity;
-    airplane.mesh.rotation.x = (airplane.mesh.position.y - targetY)*deltaTime*game.planeRotZSensivity;
+    object.mesh.rotation.z = (targetY-object.mesh.position.y)*deltaTime*game.planeRotXSensivity;
+    object.mesh.rotation.x = (object.mesh.position.y - targetY)*deltaTime*game.planeRotZSensivity;
 
     var targetCameraZ = normalize(game.planeSpeed,game.planeMinSpeed,game.planeMaxSpeed,game.cameraNearPos,game.cameraFarPos);
     camera.fov = normalize(mousePos.x,-1,1,40,80);
     camera.updateProjectionMatrix();
-    camera.position.y += (airplane.mesh.position.y - camera.position.y)*deltaTime*game.cameraSensivity;
+    camera.position.y += (object.mesh.position.y - camera.position.y)*deltaTime*game.cameraSensivity;
 
     game.planeCollisionSpeedX += (0-game.planeCollisionSpeedX)*deltaTime * 0.03;
     game.planeCollisionDisplacementX += (0-game.planeCollisionDisplacementX)*deltaTime *0.01;
     game.planeCollisionSpeedY += (0-game.planeCollisionSpeedY)*deltaTime * 0.03;
     game.planeCollisionDisplacementY += (0-game.planeCollisionDisplacementY)*deltaTime *0.01;
 
-
-    //airplane.naruto.updateHairs();
-    //airplane.propeller.rotation.x += 0.3;
-}
-
-
-function updateRocket(){
-
-    game.planeSpeed = normalize(mousePos.x,-.5,.5,game.planeMinSpeed,game.planeMaxSpeed);
-
-    var targetY = normalize(mousePos.y,-.75,.75,game.planeDefaultHeight - game.planeAmpHeight, game.planeDefaultHeight + game.planeAmpHeight);
-    var targetX = normalize(mousePos.x,-1,1,-game.planeAmpWidth*.7, -game.planeAmpWidth);
-
-    game.planeCollisionDisplacementX += game.planeCollisionSpeedX;
-    targetX += game.planeCollisionDisplacementX;
-
-    game.planeCollisionDisplacementY += game.planeCollisionSpeedY;
-    targetY += game.planeCollisionDisplacementY;
-
-
-    rocket1.mesh.position.y += (targetY - rocket1.mesh.position.y)*deltaTime*game.planeMoveSensivity;
-    rocket1.mesh.position.x += (targetX - rocket1.mesh.position.x)*deltaTime*game.planeMoveSensivity;
-
-    rocket1.mesh.rotation.z = (targetY-rocket1.mesh.position.y)*deltaTime*game.planeRotXSensivity;
-    rocket1.mesh.rotation.x = (rocket1.mesh.position.y - targetY)*deltaTime*game.planeRotZSensivity;
-
-    var targetCameraZ = normalize(game.planeSpeed,game.planeMinSpeed,game.planeMaxSpeed,game.cameraNearPos,game.cameraFarPos);
-    camera.fov = normalize(mousePos.x,-1,1,40,80);
-    camera.updateProjectionMatrix();
-    camera.position.y += (rocket1.mesh.position.y - camera.position.y)*deltaTime*game.cameraSensivity;
-
-    game.planeCollisionSpeedX += (0-game.planeCollisionSpeedX)*deltaTime * 0.03;
-    game.planeCollisionDisplacementX += (0-game.planeCollisionDisplacementX)*deltaTime *0.01;
-    game.planeCollisionSpeedY += (0-game.planeCollisionSpeedY)*deltaTime * 0.03;
-    game.planeCollisionDisplacementY += (0-game.planeCollisionDisplacementY)*deltaTime *0.01;
-
-
-    //airplane.naruto.updateHairs();
-    //airplane.propeller.rotation.x += 0.3;
 }
 
 function normalize(v,vmin,vmax,tmin, tmax) {
@@ -1221,19 +1479,27 @@ var fieldDistance, energyBar, replayMessage, fieldLevel, levelCircle;
 function init(event) {
 
 
-    // fieldDistance = document.getElementById("distValue");
-    // energyBar = document.getElementById("energyBar");
-    // replayMessage = document.getElementById("replayMessage");
-    // fieldLevel = document.getElementById("levelValue");
-    // levelCircle = document.getElementById("levelCircleStroke");
+     fieldDistance = document.getElementById("distValue");
+     energyBar = document.getElementById("energyBar");
+     replayMessage = document.getElementById("replayMessage");
+     fieldLevel = document.getElementById("levelValue");
+     levelCircle = document.getElementById("levelCircleStroke");
 
 
 
     resetGame();
     createScene();
     createLights();
+    createTerrain();
+    createSaturnSystem();
+    createASystem();
+    createCactus();
+    // createGaxlaxy();
+    //createBeautySystem();
+    //createCharacter();
     //createPlane();
     createRocket();
+    createFly();
     createSea();
     createSky();
     //createSmoke();
@@ -1243,7 +1509,8 @@ function init(event) {
     createParticles();
 
 
-    document.addEventListener('mousemove',handleMouseMove,false);
+    document.addEventListener('mousemove', handleMouseMove, false);
+
     loop();
 }
 
@@ -1255,7 +1522,5 @@ function handleMouseMove(event) {
     var ty = 1 - (event.clientY / HEIGHT)*2;
     mousePos = {x:tx, y:ty};
 }
-
-
 
 window.addEventListener('load',init,false);
